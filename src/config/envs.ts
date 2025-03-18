@@ -15,6 +15,7 @@ const envsSchema = joi
   })
   .unknown(true);
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const { error, value } = envsSchema.validate(process.env);
 
 if (error) {

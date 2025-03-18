@@ -12,23 +12,23 @@ import {
 } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { PaginationDto } from 'src/common';
+import { IProductsController, PaginationDto } from 'src/common';
 import { PRODUCT_SERVICE } from 'src/config';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
 @Controller('products')
-export class ProductsController {
+export class ProductsController implements IProductsController {
   constructor(
     @Inject(PRODUCT_SERVICE) private readonly productsClient: ClientProxy,
   ) {}
 
   @Post()
-  async createProducts(@Body() createProductsDto: CreateProductDto) {
+  async createProduct(@Body() createProductDto: CreateProductDto) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const createProducts = await firstValueFrom(
-        this.productsClient.send({ cmd: 'create_product' }, createProductsDto),
+        this.productsClient.send({ cmd: 'create_product' }, createProductDto),
       );
       return createProducts;
     } catch (error) {
@@ -38,12 +38,12 @@ export class ProductsController {
   }
 
   @Get()
-  finAllProducts(@Query() paginationDto: PaginationDto) {
+  findAllProducts(@Query() paginationDto: PaginationDto) {
     return this.productsClient.send({ cmd: 'find_all_product' }, paginationDto);
   }
 
   @Get(':id')
-  async finOneProducts(@Param('id') id: string) {
+  async findOneProduct(@Param('id', ParseIntPipe) id: number) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const products = await firstValueFrom(
@@ -57,12 +57,12 @@ export class ProductsController {
   }
 
   @Delete(':id')
-  deleteProducts(@Param('id') id: string) {
+  deleteProduct(@Param('id', ParseIntPipe) id: number) {
     return this.productsClient.emit({ cmd: 'delete_product' }, { id: id });
   }
 
   @Patch(':id')
-  async updateProducts(
+  async updateProduct(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductDto: UpdateProductDto,
   ) {
