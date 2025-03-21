@@ -13,26 +13,26 @@ import { ORDER_SERVICE } from 'src/config';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { CreateOrderDto, OrderPaginationDto, StatusDto } from './dto';
 import { firstValueFrom } from 'rxjs';
-import { PaginationDto } from 'src/common';
+import { IOrdersController, PaginationDto } from 'src/common';
 
 @Controller('orders')
-export class OrdersController {
+export class OrdersController implements IOrdersController {
   constructor(
     @Inject(ORDER_SERVICE) private readonly orderClient: ClientProxy,
   ) {}
 
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
+  createOrder(@Body() createOrderDto: CreateOrderDto) {
     return this.orderClient.send({ cmd: 'create_order' }, createOrderDto);
   }
 
   @Get()
-  findAll(@Query() orderPaginationDto: OrderPaginationDto) {
+  findAllOrder(@Query() orderPaginationDto: OrderPaginationDto) {
     return this.orderClient.send({ cmd: 'find_all_order' }, orderPaginationDto);
   }
 
   @Get('id/:id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+  async findOneOrder(@Param('id', ParseUUIDPipe) id: string) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const order = await firstValueFrom(
@@ -45,7 +45,7 @@ export class OrdersController {
   }
 
   @Get(':status')
-  async findOneByStatus(
+  async findOrderByStatus(
     @Param() statusDto: StatusDto,
     @Query() paginationDto: PaginationDto,
   ) {
