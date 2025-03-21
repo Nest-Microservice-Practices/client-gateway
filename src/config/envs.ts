@@ -5,13 +5,17 @@ interface EnvVars {
   PORT: number;
   PRODUCT_SERVICE_PORT: number;
   PRODUCT_SERVICE_HOST: string;
+  ORDER_SERVICE_PORT: number;
+  ORDER_SERVICE_HOST: string;
 }
 
 const envsSchema = joi
   .object<EnvVars>({
     PORT: joi.number().port().required(),
     PRODUCT_SERVICE_HOST: joi.string().hostname().required(),
+    ORDER_SERVICE_HOST: joi.string().hostname().required(),
     PRODUCT_SERVICE_PORT: joi.number().port().required(),
+    ORDER_SERVICE_PORT: joi.number().port().required(),
   })
   .unknown(true);
 
@@ -28,4 +32,6 @@ export const envs = {
   port: envVars.PORT,
   productServiceHost: envVars.PRODUCT_SERVICE_HOST,
   productServicePort: envVars.PRODUCT_SERVICE_PORT,
+  orderServiceHost: envVars.ORDER_SERVICE_HOST,
+  orderServicePort: envVars.ORDER_SERVICE_PORT,
 };
