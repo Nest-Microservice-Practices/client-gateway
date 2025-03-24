@@ -22,8 +22,17 @@ export class OrdersController implements IOrdersController {
   ) {}
 
   @Post()
-  createOrder(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderClient.send({ cmd: 'create_order' }, createOrderDto);
+  async createOrder(@Body() createOrderDto: CreateOrderDto) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const product = await firstValueFrom(
+        this.orderClient.send({ cmd: 'create_order' }, createOrderDto),
+      );
+
+      return product;
+    } catch (error) {
+      throw new RpcException(error);
+    }
   }
 
   @Get()
@@ -50,6 +59,7 @@ export class OrdersController implements IOrdersController {
     @Query() paginationDto: PaginationDto,
   ) {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const orderByStatus = await firstValueFrom(
         this.orderClient.send(
           { cmd: 'find_all_order' },

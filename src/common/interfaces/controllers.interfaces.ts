@@ -1,9 +1,9 @@
 import { CreateProductDto } from 'src/products/dto/create-product.dto';
 import { UpdateProductDto } from 'src/products/dto/update-product.dto';
 import { PaginationDto } from '../dto/pagination.dto';
-import { CreateOrderDto } from '../../orders/dto/create-order.dto';
 import { OrderPaginationDto } from '../../orders/dto/order.pagination.dto';
 import { StatusDto } from '../../orders/dto/status.dto';
+import { CreateOrderDto } from '../../orders/dto/create.order.dto';
 
 export interface IProductsController {
   createProduct(createProductDto: CreateProductDto);
