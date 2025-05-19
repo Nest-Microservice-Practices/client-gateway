@@ -9,7 +9,7 @@ import {
   ParseUUIDPipe,
   Query,
 } from '@nestjs/common';
-import { ORDER_SERVICE } from 'src/config';
+import { NATS_SERVICE } from 'src/config';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { CreateOrderDto, OrderPaginationDto, StatusDto } from './dto';
 import { firstValueFrom } from 'rxjs';
@@ -17,16 +17,14 @@ import { IOrdersController, PaginationDto } from 'src/common';
 
 @Controller('orders')
 export class OrdersController implements IOrdersController {
-  constructor(
-    @Inject(ORDER_SERVICE) private readonly orderClient: ClientProxy,
-  ) {}
+  constructor(@Inject(NATS_SERVICE) private readonly client: ClientProxy) {}
 
   @Post()
   async createOrder(@Body() createOrderDto: CreateOrderDto) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const product = await firstValueFrom(
-        this.orderClient.send({ cmd: 'create_order' }, createOrderDto),
+        this.client.send({ cmd: 'create_order' }, createOrderDto),
       );
 
       return product;
@@ -36,8 +34,16 @@ export class OrdersController implements IOrdersController {
   }
 
   @Get()
-  findAllOrder(@Query() orderPaginationDto: OrderPaginationDto) {
-    return this.orderClient.send({ cmd: 'find_all_order' }, orderPaginationDto);
+  async findAllOrder(@Query() orderPaginationDto: OrderPaginationDto) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const order = await firstValueFrom(
+        this.client.send({ cmd: 'find_all_order' }, orderPaginationDto),
+      );
+      return order;
+    } catch (error) {
+      throw new RpcException(error);
+    }
   }
 
   @Get('id/:id')
@@ -45,7 +51,7 @@ export class OrdersController implements IOrdersController {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const order = await firstValueFrom(
-        this.orderClient.send({ cmd: 'find_one_order' }, { id }),
+        this.client.send({ cmd: 'find_one_order' }, { id }),
       );
       return order;
     } catch (error) {
@@ -61,7 +67,7 @@ export class OrdersController implements IOrdersController {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const orderByStatus = await firstValueFrom(
-        this.orderClient.send(
+        this.client.send(
           { cmd: 'find_all_order' },
           {
             ...paginationDto,
@@ -83,7 +89,7 @@ export class OrdersController implements IOrdersController {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const order = await firstValueFrom(
-        this.orderClient.send(
+        this.client.send(
           { cmd: 'change_order_status' },
           { id, status: statusDto.status },
         ),

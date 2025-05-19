@@ -13,22 +13,20 @@ import {
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { IProductsController, PaginationDto } from 'src/common';
-import { PRODUCT_SERVICE } from 'src/config';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { NATS_SERVICE } from 'src/config';
 
 @Controller('products')
 export class ProductsController implements IProductsController {
-  constructor(
-    @Inject(PRODUCT_SERVICE) private readonly productsClient: ClientProxy,
-  ) {}
+  constructor(@Inject(NATS_SERVICE) private readonly client: ClientProxy) {}
 
   @Post()
   async createProduct(@Body() createProductDto: CreateProductDto) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const createProducts = await firstValueFrom(
-        this.productsClient.send({ cmd: 'create_product' }, createProductDto),
+        this.client.send({ cmd: 'create_product' }, createProductDto),
       );
       return createProducts;
     } catch (error) {
@@ -39,7 +37,7 @@ export class ProductsController implements IProductsController {
 
   @Get()
   findAllProducts(@Query() paginationDto: PaginationDto) {
-    return this.productsClient.send({ cmd: 'find_all_product' }, paginationDto);
+    return this.client.send({ cmd: 'find_all_product' }, paginationDto);
   }
 
   @Get(':id')
@@ -47,7 +45,7 @@ export class ProductsController implements IProductsController {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const products = await firstValueFrom(
-        this.productsClient.send({ cmd: 'find_one_product' }, { id }),
+        this.client.send({ cmd: 'find_one_product' }, { id }),
       );
       return products;
     } catch (error) {
@@ -58,7 +56,7 @@ export class ProductsController implements IProductsController {
 
   @Delete(':id')
   deleteProduct(@Param('id', ParseIntPipe) id: number) {
-    return this.productsClient.emit({ cmd: 'delete_product' }, { id: id });
+    return this.client.emit({ cmd: 'delete_product' }, { id: id });
   }
 
   @Patch(':id')
@@ -69,7 +67,7 @@ export class ProductsController implements IProductsController {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const updateProduct = await firstValueFrom(
-        this.productsClient.send(
+        this.client.send(
           { cmd: 'update_product' },
           {
             id,
